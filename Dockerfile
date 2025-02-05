@@ -1,56 +1,42 @@
-# Step 1: Use an official Node.js runtime as a base image for building the app
-FROM node:16-slim AS build
+# Stage 1: Build the app using Node.js
+FROM node:16 AS build
 
-# Step 2: Set a working directory for the app
-WORKDIR /app
+# Set the working directory inside the container
+WORKDIR /usr/src/app
 
-# Step 3: Copy package files for dependency installation
-COPY package*.json ./
+# Copy the package.json and install dependencies
+COPY package.json ./
+RUN npm install -f
 
-# Step 4: Install all dependencies, including development dependencies
-RUN npm install
-
-# Step 5: Install Vite globally for building the app
-RUN npm install -g vite
-
-# Step 6: Copy the rest of the application code
+# Copy the rest of the application code
 COPY . .
 
-# Step 7: Build the React application for production
+# Install Vite globally for building the app
+RUN npm install -g vite
+
+# Build the app
 RUN npm run build
 
-# Step 8: Use a smaller base image for serving the built app
-FROM nginx:alpine
+### Stage 2: Run the app with Nginx ###
+FROM nginx:1.17.1-alpine
 
-# Step 9: Create a non-root user to run the application
-RUN adduser -D -g '' appuser
-
-# Step 10: Fix permissions for directories that require access by nginx process
-RUN mkdir -p /var/run && \
-    chown -R appuser:appuser /var/run && \
-    chmod 755 /var/run
-
-# Step 11: Remove default nginx configuration to avoid potential conflicts
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Step 12: Copy the custom nginx configuration (if you have one) or proceed with default
+# Copy the custom Nginx configuration file (if any)
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Step 13: Copy the build artifacts from the build stage to the Nginx HTML directory
-COPY --from=build /app/build /usr/share/nginx/html
+# Copy the built app from the build stage to the Nginx HTML directory
+COPY --from=build /usr/src/app/build /usr/share/nginx/html
 
-# Step 14: Set ownership and permissions for files (to ensure the non-root user can access the files)
+# Create a non-root user for security reasons
+RUN adduser -D -g '' appuser
+
+# Change ownership of the Nginx directory to the non-root user
 RUN chown -R appuser:appuser /usr/share/nginx/html
 
-# Step 15: Set ownership and permissions for /var/cache/nginx directory (to avoid cache issues)
-RUN mkdir -p /var/cache/nginx/client_temp && \
-    chown -R appuser:appuser /var/cache/nginx
-
-# Step 16: Switch to the non-root user for security
+# Switch to the non-root user
 USER appuser
 
-# Step 17: Expose the port for the container
+# Expose port 80 to access the app
 EXPOSE 80
 
-# Step 18: Run the Nginx server as the non-root user
+# Start Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
