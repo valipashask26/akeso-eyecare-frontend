@@ -1,0 +1,31 @@
+image: saisk026/ubuntu-docker:20.04
+
+stages:
+  - build
+  - deploy
+
+build_frontend_dev:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  environment:
+    name: development
+  tags:
+    - akeso-sk
+  script:
+    - echo "Building frontend docker image"
+    - export IMAGE_TAG="$(date +%Y%m%d%H%M)"
+    - echo "IMAGE_TAG=${IMAGE_TAG}" > .env
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"${ACR_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${ACR_USERNAME}" "${ACR_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+    - echo "Pushing the frontend image to ACR with tag ${IMAGE_TAG}"
+    - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile" --destination "${ACR_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_FR_DEV_NAME}:${IMAGE_TAG}"
+  artifacts:
+    paths:
+      - .env  # Upload .env file as artifact to be used in deploy stage
+
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+
+
