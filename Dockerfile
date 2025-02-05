@@ -8,8 +8,8 @@ WORKDIR /usr/src/app
 COPY package.json ./
 RUN npm install -f
 
-# Install crypto-browserify polyfill for Node.js environment
-RUN npm install crypto-browserify
+# Install necessary polyfills for crypto
+RUN npm install crypto-browserify stream-browserify util node-polyfill-webpack-plugin
 
 # Copy the rest of the application code
 COPY . .
