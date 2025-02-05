@@ -7,14 +7,14 @@ WORKDIR /app
 # Step 3: Copy package files for dependency installation
 COPY package*.json ./
 
-# Step 4: Install all necessary dependencies (including dev dependencies)
-RUN npm install
+# Step 4: Install only the necessary dependencies (without dev dependencies for production)
+RUN npm install --production
 
 # Step 5: Copy the rest of the application code
 COPY . .
 
 # Step 6: Build the React application for production
-RUN npm run build  # This assumes Vite is included in your dependencies
+RUN npm run build
 
 # Step 7: Use a smaller base image for serving the built app
 FROM nginx:alpine
@@ -29,16 +29,20 @@ RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Step 11: Copy the build artifacts from the build stage to the Nginx HTML directory
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/build /usr/share/nginx/html
 
 # Step 12: Set ownership and permissions for files (to ensure the non-root user can access the files)
 RUN chown -R appuser:appuser /usr/share/nginx/html
 
-# Step 13: Switch to the non-root user for security
+# Step 13: Create required directories and set permissions
+RUN mkdir -p /var/cache/nginx/client_temp && \
+    chown -R appuser:appuser /var/cache/nginx
+
+# Step 14: Switch to the non-root user for security
 USER appuser
 
-# Step 14: Expose the port for the container
+# Step 15: Expose the port for the container
 EXPOSE 80
 
-# Step 15: Run the Nginx server as the non-root user
+# Step 16: Run the Nginx server as the non-root user
 CMD ["nginx", "-g", "daemon off;"]

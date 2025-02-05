@@ -23,13 +23,26 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: <your-frontend-image>:latest  # Replace with your frontend Docker image
+          image: akesosk.azurecr.io/akeso/frontend-dev:202502051506  # Replace with your frontend Docker image
           ports:
             - containerPort: 80
           envFrom:
             - configMapRef:
                 name: frontend-config  # Referencing the ConfigMap to get the BACKEND_URL
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      imagePullSecrets:
+        - name: acr-registry2  # Use the created Docker registry secret for private images
+
+
 ---
+
+
 apiVersion: v1
 kind: Service
 metadata:
