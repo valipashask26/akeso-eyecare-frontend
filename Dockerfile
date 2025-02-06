@@ -13,21 +13,18 @@ COPY . .
 
 RUN npm run build
 
-# Stage 2: Production stage
-FROM node:18-alpine
+# Stage 2: Nginx for serving the built app
+FROM nginx:alpine
 
-WORKDIR /app
+# Remove default Nginx static content and replace with built files
+RUN rm -rf /usr/share/nginx/html/*
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Install serve globally for serving the built files
-RUN npm i -g serve
+# Copy a custom Nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy only the built app from the builder stage
-COPY --from=builder /app/dist ./dist
+# Expose port 80
+EXPOSE 80
 
-# Use a non-root user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
-
-EXPOSE 3000
-
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
