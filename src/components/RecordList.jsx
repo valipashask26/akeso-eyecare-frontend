@@ -40,12 +40,12 @@ export default function RecordList() {
   const [records, setRecords] = useState([]);
 
   // Access backend URL from config
-  const BACKEND_URL = config.BACKEND_URL;
+  const VITE_API_BASE_URL = config.VITE_API_BASE_URL;
 
   // This method fetches the records from the database.
   useEffect(() => {
     async function getRecords() {
-      const response = await fetch(`${BACKEND_URL}/record/`);
+      const response = await fetch(`${VITE_API_BASE_URL}/record/`);
       if (!response.ok) {
         const message = `An error occurred: ${response.statusText}`;
         console.error(message);
@@ -59,7 +59,7 @@ export default function RecordList() {
 
   // This method will delete a record
   async function deleteRecord(id) {
-    await fetch(`${BACKEND_URL}/record/${id}`, {
+    await fetch(`${VITE_API_BASE_URL}/record/${id}`, {
       method: "DELETE",
     });
     const newRecords = records.filter((el) => el._id !== id);
