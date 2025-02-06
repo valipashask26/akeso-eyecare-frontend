@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: frontend-config
 data:
-  BACKEND_URL: "http://10.0.167.92:5050"  # Just the backend service name and port (default port 80)
+  BACKEND_URL: "https://back.misterdevops.xyz:80"  # Just the backend service name and port (default port 80)
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: akesosk.azurecr.io/akeso/frontend-dev:202502060051  # Replace with your frontend Docker image
+          image: akesosk.azurecr.io/akeso/frontend-dev:202502060116  # Replace with your frontend Docker image
           ports:
             - containerPort: 80
           envFrom:
@@ -53,5 +53,5 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 3000
+      targetPort: 80
   type: ClusterIP
