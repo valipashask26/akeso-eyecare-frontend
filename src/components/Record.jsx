@@ -14,10 +14,10 @@ export default function Record() {
   useEffect(() => {
     async function fetchData() {
       const id = params.id?.toString() || undefined;
-      if (!id) return;
+      if(!id) return;
       setIsNew(false);
       const response = await fetch(
-        `https://back.misterdevops.xyz:80/record/${params.id.toString()}`
+        `${import.meta.env.VITE_API_BASE_URL}/record/${params.id.toString()}`
       );
       if (!response.ok) {
         const message = `An error has occurred: ${response.statusText}`;
@@ -51,7 +51,7 @@ export default function Record() {
       let response;
       if (isNew) {
         // if we are adding a new record we will POST to /record.
-        response = await fetch(`https://back.misterdevops.xyz:80/record`, {
+        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/record`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -60,7 +60,7 @@ export default function Record() {
         });
       } else {
         // if we are updating a record we will PATCH to /record/:id.
-        response = await fetch(`https://back.misterdevops.xyz:80/record/${params.id}`, {
+        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/record/${params.id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import config from "../../config";  // Import the config file
 
 const Record = (props) => (
   <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
@@ -38,10 +39,13 @@ const Record = (props) => (
 export default function RecordList() {
   const [records, setRecords] = useState([]);
 
+  // Access backend URL from config
+  const BACKEND_URL = config.BACKEND_URL;
+
   // This method fetches the records from the database.
   useEffect(() => {
     async function getRecords() {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/record/`);
+      const response = await fetch(`${BACKEND_URL}/record/`);
       if (!response.ok) {
         const message = `An error occurred: ${response.statusText}`;
         console.error(message);
@@ -51,12 +55,11 @@ export default function RecordList() {
       setRecords(records);
     }
     getRecords();
-    return;
-  }, [records.length]);
+  }, []);
 
   // This method will delete a record
   async function deleteRecord(id) {
-    await fetch(`${import.meta.env.VITE_API_BASE_URL}/record/${id}`, {
+    await fetch(`${BACKEND_URL}/record/${id}`, {
       method: "DELETE",
     });
     const newRecords = records.filter((el) => el._id !== id);
