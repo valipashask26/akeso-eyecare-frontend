@@ -6,7 +6,8 @@ WORKDIR /app
 # Copy package.json and package-lock.json first for better caching
 COPY package.json package-lock.json ./
 
-RUN npm ci --only=production
+# Ensure devDependencies are installed (needed for vite)
+RUN npm install --include=dev
 
 COPY . . 
 
