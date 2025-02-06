@@ -4,7 +4,7 @@ metadata:
   name: frontend-config
   namespace: ui-${BRANCH}
 data:
-  VITE_API_BASE_URL: "https://back-dev.misterdevops.xyz"  # Just the backend service name and port (default port 80)
+  VITE_API_BASE_URL: "https://back.misterdevops.xyz"  # Just the backend service name and port (default port 80)
 ---
 apiVersion: apps/v1
 kind: Deployment
