@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: frontend-app-container
-          image: "akesosk.azurecr.io/akeso/backend-${BRANCH}:${IMAGE_TAG}"  # Dynamic image tag
+          image: "akesosk.azurecr.io/akeso/frontend-${BRANCH}:${IMAGE_TAG}"  # Dynamic image tag
           ports:
             - containerPort: 80
           envFrom:
