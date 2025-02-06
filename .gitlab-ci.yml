@@ -29,3 +29,55 @@ build_frontend_dev:
     - if: $CI_COMMIT_BRANCH == "dev"
 
 
+deploy_frontend_dev:
+  stage: deploy
+  environment:
+    name: development
+  tags:
+    - akeso-sk
+  before_script:
+  - echo "Installing kubectl"
+  - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  - chmod +x ./kubectl
+  - mv ./kubectl /usr/local/bin/kubectl
+  - echo "kubectl version installed:"
+  - kubectl version --client
+  - echo "Creating kubeconfig directory"
+  - mkdir -p ~/.kube
+  - echo "Adding kubeconfig file"
+  - echo "$KUBECONFIG" | base64 -d > ~/.kube/config
+  - echo "Setting kubeconfig environment variable"
+  - export KUBECONFIG=~/.kube/config
+
+
+  script:
+    - echo "Loading image tag from .env file"
+    - source .env
+    - echo "IMAGE_TAG=${IMAGE_TAG}"
+
+    - echo "Checking if frontend-app deployment exists"
+    - kubectl get deployment frontend-app -n ui-dev || DEPLOYMENT_EXISTS=false
+    - |
+      if [ "$DEPLOYMENT_EXISTS" = "false" ]; then
+        echo "frontend-app deployment not found, creating new deployment from manifest.yaml"
+        sed -i "s|\${BRANCH}|dev|g" manifest.yaml
+        sed -i "s|image: \"akesosk.azurecr.io/akeso/frontend-.*\"|image: \"akesosk.azurecr.io/akeso/frontend-dev:${IMAGE_TAG}\"|" manifest.yaml
+        kubectl apply -f manifest.yaml
+      else
+        echo "frontend-app deployment found, updating image"
+        kubectl set image deployment/frontend-app -n ui-dev frontend-app-container="akesosk.azurecr.io/akeso/frontend-dev:${IMAGE_TAG}"
+      fi
+
+    # Check rollout status
+    - echo "Checking rollout status..."
+    - |
+      if ! kubectl rollout status deployment/frontend-app -n ui-dev --timeout=60s; then
+        echo "Deployment failed, rolling back..."
+        kubectl rollout undo deployment/frontend-app -n ui-dev
+        exit 1
+      else
+        echo "Deployment successful"
+      fi
+
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
