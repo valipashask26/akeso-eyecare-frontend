@@ -39,7 +39,7 @@ spec:
               memory: "512Mi"
               cpu: "500m"
       imagePullSecrets:
-        - name: acr-registry2  # Use the created Docker registry secret for private images
+        - name: acr-registry2  # Use the created Docker registry secret for private images1
 
 
 ---
